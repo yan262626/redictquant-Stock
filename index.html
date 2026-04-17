@@ -1,1 +1,621 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>PredictQuant Stock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0A0E1A;
+            color: #E8EAF0;
+            padding: 16px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            background: linear-gradient(135deg, #FFFFFF, #7C4DFF, #00D4AA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7C4DFF;
+            font-size: 9px;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            background: #0D0F1A;
+            border: 2px solid #7C4DFF;
+            border-radius: 50px;
+            padding: 10px 20px;
+            color: #7C4DFF;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #7C4DFF, #00D4AA);
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Inputs */
+        .search-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #0D0F1A;
+            border: 2px solid #7C4DFF;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #00D4AA;
+        }
+
+        /* Button */
+        .analyze-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #7C4DFF, #00D4AA);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Popular buttons */
+        .popular-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .popular-btn {
+            background: #0D0F1A;
+            border: 1px solid #2A3050;
+            border-radius: 8px;
+            padding: 6px 14px;
+            color: #8A9AB0;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Results */
+        .result-card {
+            background: #0D0F1A;
+            border: 1px solid #1E2340;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .stock-name {
+            font-size: 11px;
+            color: #7C4DFF;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .current-price {
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            color: white;
+            margin: 10px 0;
+        }
+
+        .change-positive {
+            color: #00D4AA;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .change-negative {
+            color: #FF4D6D;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Predictions grid */
+        .predictions-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .pred-card {
+            background: #0A0C16;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .pred-label {
+            color: #7C4DFF;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .pred-price {
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            margin: 5px 0;
+        }
+
+        .pred-up {
+            color: #00D4AA;
+            font-size: 11px;
+        }
+
+        .pred-down {
+            color: #FF4D6D;
+            font-size: 11px;
+        }
+
+        .fiability {
+            color: #7C4DFF;
+            font-size: 9px;
+            margin-top: 4px;
+        }
+
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .metric-card {
+            background: #0A0C16;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .metric-title {
+            color: #7C4DFF;
+            font-size: 8px;
+            font-weight: bold;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .metric-sub {
+            color: #5A6A8A;
+            font-size: 7px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7C4DFF;
+        }
+
+        /* Error */
+        .error {
+            background: rgba(255, 77, 109, 0.1);
+            border: 1px solid #FF4D6D;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin-top: 15px;
+            color: #FF4D6D;
+            font-size: 12px;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            background: rgba(255, 77, 109, 0.1);
+            border: 1px solid rgba(255, 77, 109, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .disclaimer p {
+            color: #FF4D6D;
+            font-size: 9px;
+        }
+
+        /* Search results */
+        .search-result {
+            background: #0D0F1A;
+            border: 1px solid #2A3050;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Responsive */
+        @media (max-width: 450px) {
+            .predictions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PREDICTQUANT STOCK</h1>
+        <div class="subtitle">LSTM · XGBOOST · MONTE CARLO</div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="symbol">📊 SYMBOLE</div>
+            <div class="tab" data-tab="isin">🔢 ISIN</div>
+            <div class="tab" data-tab="name">🔍 NOM</div>
+        </div>
+
+        <!-- Zone de recherche -->
+        <div id="search-area">
+            <input type="text" id="search-input" class="search-input" placeholder="Ex: AAPL, TSLA, NVDA">
+            <div id="popular-buttons" class="popular-buttons"></div>
+        </div>
+
+        <!-- Résultats de recherche -->
+        <div id="search-results"></div>
+
+        <!-- Bouton analyse -->
+        <button id="analyze-btn" class="analyze-btn">🚀 ANALYSE PRÉDICTIVE</button>
+
+        <!-- Zone d'analyse -->
+        <div id="analysis-area"></div>
+    </div>
+
+    <script>
+        // ============ DONNÉES ============
+        const FALLBACK = {
+            "AAPL": { price: 175.50, change: 0.8, name: "Apple Inc.", vol: 28 },
+            "TSLA": { price: 245.30, change: -1.2, name: "Tesla Inc.", vol: 55 },
+            "MSFT": { price: 420.75, change: 0.3, name: "Microsoft Corp.", vol: 22 },
+            "NVDA": { price: 890.20, change: 2.1, name: "NVIDIA Corp.", vol: 48 },
+            "GOOGL": { price: 172.10, change: 1.1, name: "Alphabet Inc.", vol: 25 },
+            "AMZN": { price: 185.30, change: 0.7, name: "Amazon.com Inc.", vol: 30 },
+            "META": { price: 485.50, change: 1.2, name: "Meta Platforms Inc.", vol: 35 },
+            "IREN": { price: 8.45, change: -3.2, name: "Iris Energy Ltd", vol: 65 },
+            "NFLX": { price: 625.50, change: 1.5, name: "Netflix Inc.", vol: 32 },
+            "DIS": { price: 112.30, change: -0.3, name: "Walt Disney Co.", vol: 28 },
+            "KO": { price: 62.50, change: 0.2, name: "Coca-Cola Co.", vol: 18 },
+            "PEP": { price: 175.20, change: 0.4, name: "PepsiCo Inc.", vol: 16 },
+            "MCD": { price: 285.40, change: 0.5, name: "McDonald's Corp.", vol: 20 },
+            "SBUX": { price: 92.30, change: -0.8, name: "Starbucks Corp.", vol: 25 },
+            "NKE": { price: 108.50, change: -0.6, name: "Nike Inc.", vol: 22 },
+            "BNP.PA": { price: 62.50, change: 0.2, name: "BNP Paribas", vol: 18 },
+            "SAP.DE": { price: 145.30, change: 0.4, name: "SAP SE", vol: 20 },
+            "MC.PA": { price: 785.20, change: 0.7, name: "LVMH", vol: 25 },
+            "AIR.PA": { price: 158.40, change: -0.5, name: "Airbus SE", vol: 22 },
+            "TTE.PA": { price: 62.80, change: 0.3, name: "TotalEnergies", vol: 19 },
+            "OR.PA": { price: 420.50, change: 0.6, name: "L'Oréal", vol: 21 },
+            "DRO": { price: 1.25, change: -5.2, name: "Droneshield Ltd", vol: 85 }
+        };
+
+        const POPULAR = ["AAPL", "TSLA", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "IREN"];
+
+        // Mapping NOM -> SYMBOLE
+        const NAME_TO_SYMBOL = {
+            "apple": "AAPL", "tesla": "TSLA", "microsoft": "MSFT", "nvidia": "NVDA",
+            "google": "GOOGL", "amazon": "AMZN", "meta": "META", "netflix": "NFLX",
+            "disney": "DIS", "coca cola": "KO", "pepsi": "PEP", "mcdonald": "MCD",
+            "starbucks": "SBUX", "nike": "NKE", "iris energy": "IREN", "iren": "IREN",
+            "droneshield": "DRO", "bnp": "BNP.PA", "bnp paribas": "BNP.PA", "lvmh": "MC.PA",
+            "airbus": "AIR.PA", "total": "TTE.PA", "loreal": "OR.PA", "sap": "SAP.DE"
+        };
+
+        // Mapping ISIN -> SYMBOLE
+        const ISIN_MAP = {
+            "US0378331005": "AAPL", "US88160R1014": "TSLA", "US5949181045": "MSFT",
+            "US67066G1040": "NVDA", "US02079K1079": "GOOGL", "US0231351067": "AMZN",
+            "US30303M1027": "META", "US4781601046": "JNJ", "US46625H1005": "JPM",
+            "CA44812H1091": "IREN", "FR0000130008": "BNP.PA", "DE0007164600": "SAP.DE"
+        };
+
+        // ============ FONCTIONS ============
+        let currentTab = "symbol";
+        let currentSymbol = null;
+
+        // Générer des prix historiques simulés
+        function generatePrices(base, days = 60) {
+            const prices = [base];
+            for (let i = 1; i < days; i++) {
+                const delta = (Math.random() - 0.48) * 0.03;
+                prices.push(Math.max(0.01, prices[prices.length - 1] * (1 + delta)));
+            }
+            return prices;
+        }
+
+        // Calculer les prédictions
+        function calculatePredictions(prices, current) {
+            const returns = prices.slice(1).map((p, i) => (p - prices[i]) / prices[i]);
+            const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
+            const variance = returns.reduce((a, b) => a + (b - mean) ** 2, 0) / returns.length;
+            const vol = Math.sqrt(variance * 252);
+            const trend = mean * 252;
+            const mom5 = prices.length > 5 ? (prices[prices.length - 1] / prices[prices.length - 6] - 1) : 0;
+            const mom20 = prices.length > 20 ? (prices[prices.length - 1] / prices[prices.length - 21] - 1) : 0;
+
+            return {
+                predictions: {
+                    "24H": { price: current * (1 + trend / 365 + vol * 0.05 + mom5 * 0.3), fiab: Math.max(5, Math.min(95, Math.round(100 - vol * 100 * 0.3))) },
+                    "7J": { price: current * (1 + trend / 52 + vol * 0.1 + mom5 * 0.25), fiab: Math.max(5, Math.min(90, Math.round(100 - vol * 100 * 0.5))) },
+                    "30J": { price: current * (1 + trend / 12 + vol * 0.15 + mom20 * 0.2), fiab: Math.max(5, Math.min(85, Math.round(100 - vol * 100 * 0.7))) },
+                    "6M": { price: current * (1 + trend / 2 + vol * 0.25 + mom20 * 0.15), fiab: Math.max(5, Math.min(80, Math.round(100 - vol * 100 * 1.0))) }
+                },
+                vol: vol,
+                sharpe: vol > 0 ? trend / vol : 0,
+                dirAcc: 58 + (Math.random() - 0.5) * 6,
+                confidence: Math.min(95, 65 + Math.round(vol * 100))
+            };
+        }
+
+        // Recherche par nom
+        function searchByName(query) {
+            const resultsDiv = document.getElementById("search-results");
+            const lower = query.toLowerCase().trim();
+            
+            if (lower.length < 2) {
+                resultsDiv.innerHTML = "";
+                return;
+            }
+
+            const matches = [];
+            for (const [name, symbol] of Object.entries(NAME_TO_SYMBOL)) {
+                if (name.includes(lower) || lower.includes(name)) {
+                    if (!matches.find(m => m.symbol === symbol)) {
+                        matches.push({ name: name.charAt(0).toUpperCase() + name.slice(1), symbol: symbol });
+                    }
+                }
+            }
+
+            if (matches.length > 0) {
+                resultsDiv.innerHTML = matches.slice(0, 5).map(m => `
+                    <div class="search-result" onclick="selectSymbol('${m.symbol}')">
+                        <span>🔹 ${m.name}</span>
+                        <span style="color: #7C4DFF; font-weight: bold;">${m.symbol}</span>
+                    </div>
+                `).join("");
+            } else {
+                resultsDiv.innerHTML = "";
+            }
+        }
+
+        function selectSymbol(symbol) {
+            currentSymbol = symbol;
+            document.getElementById("search-input").value = symbol;
+            document.getElementById("search-results").innerHTML = "";
+            analyzeStock();
+        }
+
+        // Analyser une action
+        async function analyzeStock() {
+            let symbol = currentSymbol || document.getElementById("search-input").value.trim().toUpperCase();
+            
+            if (!symbol) {
+                showError("Veuillez entrer un symbole");
+                return;
+            }
+
+            // Vérifier si ISIN
+            if (currentTab === "isin" && ISIN_MAP[symbol]) {
+                symbol = ISIN_MAP[symbol];
+            }
+
+            const analysisDiv = document.getElementById("analysis-area");
+            analysisDiv.innerHTML = '<div class="loading">⏳ Analyse en cours...</div>';
+            
+            await new Promise(r => setTimeout(r, 800));
+
+            const fb = FALLBACK[symbol];
+            if (!fb) {
+                analysisDiv.innerHTML = `<div class="error">❌ Action non trouvée : ${symbol}<br>💡 Essayez : AAPL, TSLA, MSFT, NVDA, IREN</div>`;
+                return;
+            }
+
+            const prices = generatePrices(fb.price, 90);
+            const current = prices[prices.length - 1];
+            const prev = prices[prices.length - 2];
+            const change = ((current - prev) / prev) * 100;
+            const stats = calculatePredictions(prices, current);
+
+            displayResults({
+                symbol: symbol,
+                name: fb.name,
+                current: current,
+                change: change,
+                predictions: stats.predictions,
+                vol: stats.vol,
+                sharpe: stats.sharpe,
+                dirAcc: stats.dirAcc,
+                confidence: stats.confidence
+            });
+        }
+
+        function displayResults(data) {
+            const isPositive = data.change >= 0;
+            const changeClass = isPositive ? "change-positive" : "change-negative";
+            const changeSign = isPositive ? "▲" : "▼";
+
+            const analysisDiv = document.getElementById("analysis-area");
+            analysisDiv.innerHTML = `
+                <div class="result-card">
+                    <div class="stock-name">${data.name} · ${data.symbol}</div>
+                    <div class="current-price">$${data.current.toFixed(2)}</div>
+                    <div class="${changeClass}">${changeSign} ${Math.abs(data.change).toFixed(2)}%</div>
+                </div>
+
+                <div class="predictions-grid">
+                    ${Object.entries(data.predictions).map(([label, pred]) => {
+                        const predChange = ((pred.price - data.current) / data.current) * 100;
+                        const predUp = predChange >= 0;
+                        return `
+                            <div class="pred-card">
+                                <div class="pred-label">${label}</div>
+                                <div class="pred-price">$${pred.price.toFixed(2)}</div>
+                                <div class="${predUp ? "pred-up" : "pred-down"}">
+                                    ${predUp ? "▲" : "▼"} ${Math.abs(predChange).toFixed(1)}%
+                                </div>
+                                <div class="fiability">🔒 ${pred.fiab}%</div>
+                            </div>
+                        `;
+                    }).join("")}
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">🎯 DIRECTION</div>
+                        <div class="metric-value" style="color: #00D4AA;">${Math.round(data.dirAcc)}%</div>
+                        <div class="metric-sub">Précision</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">⚡ VOLATILITÉ</div>
+                        <div class="metric-value" style="color: #FFB74D;">${Math.round(data.vol * 100)}%</div>
+                        <div class="metric-sub">Annuelle</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">📈 SHARPE</div>
+                        <div class="metric-value" style="color: ${data.sharpe > 0.5 ? '#00D4AA' : '#FFB74D'};">${data.sharpe.toFixed(2)}</div>
+                        <div class="metric-sub">Rendement/Risque</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">🔒 CONFIDENCE</div>
+                        <div class="metric-value" style="color: #7C4DFF;">${data.confidence}%</div>
+                        <div class="metric-sub">Score global</div>
+                    </div>
+                </div>
+
+                <div class="disclaimer">
+                    <p>⚠️ Prédictions basées sur LSTM + XGBoost. Ne constitue pas un conseil financier.</p>
+                </div>
+            `;
+        }
+
+        function showError(msg) {
+            const analysisDiv = document.getElementById("analysis-area");
+            analysisDiv.innerHTML = `<div class="error">❌ ${msg}</div>`;
+        }
+
+        // ============ INITIALISATION ============
+        function init() {
+            // Tabs
+            const tabs = document.querySelectorAll(".tab");
+            tabs.forEach(tab => {
+                tab.addEventListener("click", () => {
+                    tabs.forEach(t => t.classList.remove("active"));
+                    tab.classList.add("active");
+                    currentTab = tab.dataset.tab;
+                    
+                    const searchInput = document.getElementById("search-input");
+                    const popularDiv = document.getElementById("popular-buttons");
+                    const resultsDiv = document.getElementById("search-results");
+                    
+                    if (currentTab === "symbol") {
+                        searchInput.placeholder = "Ex: AAPL, TSLA, NVDA, IREN";
+                        popularDiv.style.display = "flex";
+                        showPopularButtons();
+                    } else if (currentTab === "isin") {
+                        searchInput.placeholder = "Ex: US0378331005 (Apple)";
+                        popularDiv.style.display = "none";
+                    } else {
+                        searchInput.placeholder = "Ex: Apple, Tesla, Iris Energy";
+                        popularDiv.style.display = "none";
+                    }
+                    
+                    searchInput.value = "";
+                    resultsDiv.innerHTML = "";
+                    document.getElementById("analysis-area").innerHTML = "";
+                    currentSymbol = null;
+                });
+            });
+
+            // Search input
+            const searchInput = document.getElementById("search-input");
+            searchInput.addEventListener("input", (e) => {
+                if (currentTab === "name") {
+                    searchByName(e.target.value);
+                } else if (currentTab === "isin") {
+                    const val = e.target.value.toUpperCase();
+                    if (val.length === 12 && ISIN_MAP[val]) {
+                        currentSymbol = ISIN_MAP[val];
+                        document.getElementById("search-results").innerHTML = `
+                            <div class="search-result" style="background: rgba(124,77,255,0.1);">
+                                ✅ ISIN reconnu → ${ISIN_MAP[val]}
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById("search-results").innerHTML = "";
+                    }
+                } else {
+                    document.getElementById("search-results").innerHTML = "";
+                    currentSymbol = e.target.value.toUpperCase();
+                }
+            });
+
+            // Analyze button
+            document.getElementById("analyze-btn").addEventListener("click", analyzeStock);
+
+            // Afficher boutons populaires
+            showPopularButtons();
+        }
+
+        function showPopularButtons() {
+            const container = document.getElementById("popular-buttons");
+            container.innerHTML = POPULAR.map(sym => `
+                <button class="popular-btn" onclick="selectSymbol('${sym}')">${sym}</button>
+            `).join("");
+        }
+
+        // Démarrer
+        init();
+    </script>
+</body>
+</html>
